@@ -6,7 +6,7 @@ const context = canvas.getContext('2d');
 const grid = 32;
 
 // array with tetramino sequence. Empty at the beginning
-let tetraminoSequence = [];
+let tetrominoSequence = [];
 
 // using a 2D array, we monitor what is in each cell of the playing field
 // field size 10x20 
@@ -22,7 +22,7 @@ for (let row = -2; row < 20; row++) {
 }
 
 // make form for each cell
-const tetraminos = {
+const tetrominos = {
     'I': [
         [0, 0, 0, 0],
         [1, 1, 1, 1],
@@ -76,6 +76,61 @@ let count = 0;
 // current cell in game
 let tetromino = getNextTetromino();
 // to force stop game
-let rAF = null;  
+let rAF = null;
 // point of the end, at the beginning = false 
 let gameOver = false;
+
+
+// Функция возвращает случайное число в заданном диапазоне
+// https://stackoverflow.com/a/1527820/2124254
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+// console.log(getRandomInt(1,6)); 
+
+// создаём последовательность фигур, которая появится в игре
+function generateSequence() {
+    // тут — сами фигуры
+    const sequence = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
+
+    while (sequence.length) {
+        // случайным образом находим любую из них
+        const rand = getRandomInt(0, sequence.length - 1);
+        const name = sequence.splice(rand, 1)[0];
+        // помещаем выбранную фигуру в игровой массив с последовательностями
+        tetrominoSequence.push(name);
+    }
+}
+
+
+
+function getNextTetromino() {
+    // if there is no - generate
+    if (tetrominoSequence.length === 0) {
+        generateSequence();
+    }
+
+
+    // берём первую фигуру из массива
+    const name = tetrominoSequence.pop();
+    // сразу создаём матрицу, с которой мы отрисуем фигуру
+    const matrix = tetrominos[name];
+
+    // I и O стартуют с середины, остальные — чуть левее
+    const col = playfield[0].length / 2 - Math.ceil(matrix[0].length / 2);
+
+    // I начинает с 21 строки (смещение -1), а все остальные — со строки 22 (смещение -2)
+    const row = name === 'I' ? -1 : -2;
+
+    // вот что возвращает функция 
+    return {
+        name: name, // название фигуры (L, O, и т.д.)
+        matrix: matrix, // матрица с фигурой
+        row: row, // текущая строка (фигуры стартуют за видимой областью холста)
+        col: col // текущий столбец
+    };
+}
+
